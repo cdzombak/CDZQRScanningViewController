@@ -58,7 +58,7 @@ If you don't want to present the scanner in its own modal `UIViewController`, us
 
 ## Requirements
 
-`CDZPinger` requires iOS 7+.
+`CDZQRScanningViewController` requires iOS 7+.
 
 ## License
 

@@ -9,6 +9,10 @@
 
 #import "CDZQRScanningViewController.h"
 
+#ifndef CDZWeakSelf
+#define CDZWeakSelf __weak __typeof__((__typeof__(self))self)
+#endif
+
 @interface CDZQRScanningViewController () <AVCaptureMetadataOutputObjectsDelegate>
 
 @property (nonatomic, strong) AVCaptureSession *avSession;

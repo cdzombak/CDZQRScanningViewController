@@ -124,7 +124,7 @@
         }
     }
 
-    if (![self.lastCapturedString isEqualToString:result]) {
+    if (result && ![self.lastCapturedString isEqualToString:result]) {
         self.lastCapturedString = result;
         if (self.resultBlock) self.resultBlock(result);
     }

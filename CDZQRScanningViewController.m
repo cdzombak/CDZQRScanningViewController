@@ -13,9 +13,13 @@
 #define CDZWeakSelf __weak __typeof__((__typeof__(self))self)
 #endif
 
+static const float CDZQRScanningTorchLevel = 0.25;
+static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
+
 @interface CDZQRScanningViewController () <AVCaptureMetadataOutputObjectsDelegate>
 
 @property (nonatomic, strong) AVCaptureSession *avSession;
+@property (nonatomic, strong) AVCaptureDevice *captureDevice;
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
 
 @property (nonatomic, copy) NSString *lastCapturedString;
@@ -32,6 +36,10 @@
     if (self.cancelBlock) {
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelItemSelected:)];
     }
+
+    UILongPressGestureRecognizer *torchGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleTorchRecognizerTap:)];
+    torchGestureRecognizer.minimumPressDuration = CDZQRScanningTorchActivationDelay;
+    [self.view addGestureRecognizer:torchGestureRecognizer];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -44,17 +52,17 @@
         self.errorBlock = ^(NSError *error) { wSelf.cancelBlock(); };
     }
 
-    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    if ([device isLowLightBoostSupported] && [device lockForConfiguration:nil]) {
-        device.automaticallyEnablesLowLightBoostWhenAvailable = YES;
-        [device unlockForConfiguration];
+    self.captureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    if ([self.captureDevice isLowLightBoostSupported] && [self.captureDevice lockForConfiguration:nil]) {
+        self.captureDevice.automaticallyEnablesLowLightBoostWhenAvailable = YES;
+        [self.captureDevice unlockForConfiguration];
     }
 
     self.avSession = [[AVCaptureSession alloc] init];
     [self.avSession beginConfiguration];
 
     NSError *error = nil;
-    AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
+    AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:self.captureDevice error:&error];
     if (input) {
         [self.avSession addInput:input];
     } else {
@@ -91,6 +99,7 @@
     [self.avSession stopRunning];
     self.previewLayer = nil;
     self.avSession = nil;
+    self.captureDevice = nil;
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
@@ -114,6 +123,39 @@
 
 - (void)cancelItemSelected:(id)sender {
     if (self.cancelBlock) self.cancelBlock();
+}
+
+- (void)handleTorchRecognizerTap:(UIGestureRecognizer *)sender {
+    switch(sender.state) {
+        case UIGestureRecognizerStateBegan:
+            [self turnTorchOn];
+            break;
+        case UIGestureRecognizerStateChanged:
+        case UIGestureRecognizerStatePossible:
+            // no-op
+            break;
+        case UIGestureRecognizerStateRecognized: // also UIGestureRecognizerStateEnded
+        case UIGestureRecognizerStateFailed:
+        case UIGestureRecognizerStateCancelled:
+            [self turnTorchOff];
+            break;
+    }
+}
+
+#pragma mark - Torch
+
+- (void)turnTorchOn {
+    if (self.captureDevice.hasTorch && self.captureDevice.torchAvailable && [self.captureDevice isTorchModeSupported:AVCaptureTorchModeOn] && [self.captureDevice lockForConfiguration:nil]) {
+        [self.captureDevice setTorchModeOnWithLevel:CDZQRScanningTorchLevel error:nil];
+        [self.captureDevice unlockForConfiguration];
+    }
+}
+
+- (void)turnTorchOff {
+    if (self.captureDevice.hasTorch && [self.captureDevice isTorchModeSupported:AVCaptureTorchModeOff] && [self.captureDevice lockForConfiguration:nil]) {
+        self.captureDevice.torchMode = AVCaptureTorchModeOff;
+        [self.captureDevice unlockForConfiguration];
+    }
 }
 
 #pragma mark - AVCaptureMetadataOutputObjectsDelegate

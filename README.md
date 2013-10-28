@@ -48,6 +48,10 @@ scanningNavVC.modalPresentationStyle = UI_USER_INTERFACE_IDIOM() == UIUserInterf
 
 If you don't want to present the scanner in its own modal `UIViewController`, use view controller containment to embed it in your own view controller, instead of presenting it inside a nav controller as in this example.
 
+## Other features
+
+Tap and hold on the live video view for 0.25 seconds to activate the device's flashlight for use in low-light.
+
 ## Why use this instead of ZBarSDK?
 
 * smaller surface area

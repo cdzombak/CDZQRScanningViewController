@@ -59,6 +59,7 @@ Tap and hold on the live video view for 0.25 seconds to activate the device's fl
 * less configuration
 * less impact on your code
 * much smaller, thanks to new APIs in iOS 7
+* MIT license instead of GPL
 
 ## Requirements
 

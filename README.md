@@ -46,7 +46,7 @@ scanningNavVC.modalPresentationStyle = UI_USER_INTERFACE_IDIOM() == UIUserInterf
 [self presentViewController:scanningNavVC animated:YES completion:nil];
 ```
 
-If you don't want to present the scanner in its own modal `UIViewController`, use view controller containment to embed it in your own view controller, instead of presenting it inside a nav controller as in this example.
+If you don't want to present the scanner in its own modal `UIViewController`, [use view controller containment to embed it in your own view controller](https://github.com/cdzombak/CDZQRScannerThatDoesntSuck/blob/master/QRScanner/CDZRootViewController.m#L55), instead of presenting it inside a nav controller as in this example.
 
 ## Other features
 

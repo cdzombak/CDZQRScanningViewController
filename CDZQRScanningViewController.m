@@ -44,11 +44,16 @@
         self.errorBlock = ^(NSError *error) { wSelf.cancelBlock(); };
     }
 
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    if ([device isLowLightBoostSupported] && [device lockForConfiguration:nil]) {
+        device.automaticallyEnablesLowLightBoostWhenAvailable = YES;
+        [device unlockForConfiguration];
+    }
+
     self.avSession = [[AVCaptureSession alloc] init];
     [self.avSession beginConfiguration];
     self.avSession.sessionPreset = AVCaptureSessionPreset1280x720;
 
-    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     NSError *error = nil;
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
     if (input) {
@@ -61,13 +66,11 @@
 
     AVCaptureMetadataOutput *output = [[AVCaptureMetadataOutput alloc] init];
     [self.avSession addOutput:output];
-
     if (![output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeQRCode]) {
         NSLog(@"QRScanningViewController Error: QR object type not available.");
         if (self.errorBlock) self.errorBlock(nil);
         return;
     }
-
     output.metadataObjectTypes = @[ AVMetadataObjectTypeQRCode ];
     [output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
 

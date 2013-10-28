@@ -52,7 +52,6 @@
 
     self.avSession = [[AVCaptureSession alloc] init];
     [self.avSession beginConfiguration];
-    self.avSession.sessionPreset = AVCaptureSessionPreset1280x720;
 
     NSError *error = nil;
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];

@@ -1,6 +1,6 @@
 # CDZQRScanningViewController
 
-Easy QR code scanning on IOS 7.
+Easy QR code scanning on iOS 7.
 
 ## Installation
 

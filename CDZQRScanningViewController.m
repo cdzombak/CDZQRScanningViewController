@@ -45,6 +45,7 @@
     }
 
     self.avSession = [[AVCaptureSession alloc] init];
+    [self.avSession beginConfiguration];
     self.avSession.sessionPreset = AVCaptureSessionPreset1280x720;
 
     AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
@@ -70,6 +71,9 @@
     output.metadataObjectTypes = @[ AVMetadataObjectTypeQRCode ];
     [output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
 
+    [self.avSession commitConfiguration];
+    [self.avSession startRunning];
+
     self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.avSession];
     self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     self.previewLayer.frame = self.view.bounds;
@@ -77,8 +81,6 @@
         self.previewLayer.connection.videoOrientation = self.interfaceOrientation;
     }
     [self.view.layer addSublayer:self.previewLayer];
-
-    [self.avSession startRunning];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {

@@ -110,13 +110,12 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
     }
 }
 
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
-{
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+
     CGRect layerRect = self.view.bounds;
     self.previewLayer.bounds = layerRect;
     self.previewLayer.position = CGPointMake(CGRectGetMidX(layerRect), CGRectGetMidY(layerRect));
-
-    [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
 }
 
 #pragma mark - UI Actions

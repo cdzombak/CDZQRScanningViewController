@@ -6,6 +6,7 @@
 //
 
 #import <AVFoundation/AVFoundation.h>
+#import <dispatch/dispatch.h>
 
 #import "CDZQRScanningViewController.h"
 
@@ -52,37 +53,47 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
         self.errorBlock = ^(NSError *error) { wSelf.cancelBlock(); };
     }
 
-    self.captureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    if ([self.captureDevice isLowLightBoostSupported] && [self.captureDevice lockForConfiguration:nil]) {
-        self.captureDevice.automaticallyEnablesLowLightBoostWhenAvailable = YES;
-        [self.captureDevice unlockForConfiguration];
-    }
-
     self.avSession = [[AVCaptureSession alloc] init];
-    [self.avSession beginConfiguration];
 
-    NSError *error = nil;
-    AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:self.captureDevice error:&error];
-    if (input) {
-        [self.avSession addInput:input];
-    } else {
-        NSLog(@"QRScanningViewController: Error getting input device: %@", error);
-        if (self.errorBlock) self.errorBlock(error);
-        return;
-    }
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        self.captureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+        if ([self.captureDevice isLowLightBoostSupported] && [self.captureDevice lockForConfiguration:nil]) {
+            self.captureDevice.automaticallyEnablesLowLightBoostWhenAvailable = YES;
+            [self.captureDevice unlockForConfiguration];
+        }
 
-    AVCaptureMetadataOutput *output = [[AVCaptureMetadataOutput alloc] init];
-    [self.avSession addOutput:output];
-    if (![output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeQRCode]) {
-        NSLog(@"QRScanningViewController Error: QR object type not available.");
-        if (self.errorBlock) self.errorBlock(nil);
-        return;
-    }
-    output.metadataObjectTypes = @[ AVMetadataObjectTypeQRCode ];
-    [output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
+        [self.avSession beginConfiguration];
 
-    [self.avSession commitConfiguration];
-    [self.avSession startRunning];
+        NSError *error = nil;
+        AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:self.captureDevice error:&error];
+        if (input) {
+            [self.avSession addInput:input];
+        } else {
+            NSLog(@"QRScanningViewController: Error getting input device: %@", error);
+            if (self.errorBlock) self.errorBlock(error);
+            return;
+        }
+
+        AVCaptureMetadataOutput *output = [[AVCaptureMetadataOutput alloc] init];
+        [self.avSession addOutput:output];
+        if (![output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeQRCode]) {
+            NSLog(@"QRScanningViewController Error: QR object type not available.");
+            if (self.errorBlock) self.errorBlock(nil);
+            return;
+        }
+        output.metadataObjectTypes = @[ AVMetadataObjectTypeQRCode ];
+        [output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
+
+        [self.avSession commitConfiguration];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (self.previewLayer.connection.isVideoOrientationSupported) {
+                self.previewLayer.connection.videoOrientation = self.interfaceOrientation;
+            }
+
+            [self.avSession startRunning];
+        });
+    });
 
     self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.avSession];
     self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;

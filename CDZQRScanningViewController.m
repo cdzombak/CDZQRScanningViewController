@@ -33,6 +33,7 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
     [super viewDidLoad];
 
     self.title = NSLocalizedString(@"Scan QR Code", nil);
+    self.view.backgroundColor = [UIColor blackColor];
 
     if (self.cancelBlock) {
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelItemSelected:)];

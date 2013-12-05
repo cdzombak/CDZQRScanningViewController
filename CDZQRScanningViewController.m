@@ -127,8 +127,9 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
 
-    [self.avSession stopRunning];
+    [self.previewLayer removeFromSuperlayer];
     self.previewLayer = nil;
+    [self.avSession stopRunning];
     self.avSession = nil;
     self.captureDevice = nil;
 }

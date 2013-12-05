@@ -35,10 +35,6 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
     self.title = NSLocalizedString(@"Scan QR Code", nil);
     self.view.backgroundColor = [UIColor blackColor];
 
-    if (self.cancelBlock) {
-        self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelItemSelected:)];
-    }
-
     UILongPressGestureRecognizer *torchGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleTorchRecognizerTap:)];
     torchGestureRecognizer.minimumPressDuration = CDZQRScanningTorchActivationDelay;
     [self.view addGestureRecognizer:torchGestureRecognizer];
@@ -46,6 +42,10 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+
+    if (self.cancelBlock) {
+        self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelItemSelected:)];
+    }
 
     self.lastCapturedString = nil;
 

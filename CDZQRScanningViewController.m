@@ -14,6 +14,10 @@
 #define CDZWeakSelf __weak __typeof__((__typeof__(self))self)
 #endif
 
+#ifndef CDZStrongSelf
+#define CDZStrongSelf __typeof__(self)
+#endif
+
 static const float CDZQRScanningTorchLevel = 0.25;
 static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
 
@@ -51,7 +55,12 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
 
     if (self.cancelBlock && !self.errorBlock) {
         CDZWeakSelf wSelf = self;
-        self.errorBlock = ^(NSError *error) { wSelf.cancelBlock(); };
+        self.errorBlock = ^(NSError *error) {
+            CDZStrongSelf sSelf = wSelf;
+            if (sSelf.cancelBlock) {
+                sSelf.cancelBlock();
+            }
+        };
     }
 
     self.avSession = [[AVCaptureSession alloc] init];

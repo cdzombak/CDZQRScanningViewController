@@ -49,6 +49,8 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
 
     if (self.cancelBlock) {
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelItemSelected:)];
+    } else {
+        self.navigationItem.leftBarButtonItem = nil;
     }
 
     self.lastCapturedString = nil;

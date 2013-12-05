@@ -14,6 +14,7 @@ typedef void (^CDZQRScanCancelBlock)();
 
 @interface CDZQRScanningViewController : UIViewController
 
+// Your blocks will be called on the main queue.
 @property (nonatomic, copy) CDZQRScanResultBlock resultBlock;
 @property (nonatomic, copy) CDZQRScanErrorBlock errorBlock;
 @property (nonatomic, copy) CDZQRScanCancelBlock cancelBlock;

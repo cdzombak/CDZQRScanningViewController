@@ -80,7 +80,11 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
             [self.avSession addInput:input];
         } else {
             NSLog(@"QRScanningViewController: Error getting input device: %@", error);
-            if (self.errorBlock) self.errorBlock(error);
+            if (self.errorBlock) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    self.errorBlock(error);
+                });
+            }
             return;
         }
 
@@ -88,7 +92,11 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
         [self.avSession addOutput:output];
         if (![output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeQRCode]) {
             NSLog(@"QRScanningViewController Error: QR object type not available.");
-            if (self.errorBlock) self.errorBlock(nil);
+            if (self.errorBlock) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    self.errorBlock(nil);
+                });
+            }
             return;
         }
         output.metadataObjectTypes = @[ AVMetadataObjectTypeQRCode ];

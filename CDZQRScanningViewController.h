@@ -14,9 +14,13 @@ typedef void (^CDZQRScanCancelBlock)();
 
 @interface CDZQRScanningViewController : UIViewController
 
+- (id)initWithMetadataObjectTypes:(NSArray *)metadataObjectTypes;
+
 // Your blocks will be called on the main queue.
 @property (nonatomic, copy) CDZQRScanResultBlock resultBlock;
 @property (nonatomic, copy) CDZQRScanErrorBlock errorBlock;
 @property (nonatomic, copy) CDZQRScanCancelBlock cancelBlock;
+
+@property (nonatomic, strong) NSArray *metadataObjectTypes;
 
 @end

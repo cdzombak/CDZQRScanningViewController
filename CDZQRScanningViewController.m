@@ -21,6 +21,8 @@
 static const float CDZQRScanningTorchLevel = 0.25;
 static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
 
+NSString * const CDZQRScanningErrorDomain = @"com.cdzombak.qrscanningviewcontroller";
+
 @interface CDZQRScanningViewController () <AVCaptureMetadataOutputObjectsDelegate>
 
 @property (nonatomic, strong) AVCaptureSession *avSession;
@@ -29,11 +31,13 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
 
 @property (nonatomic, copy) NSString *lastCapturedString;
 
+@property (nonatomic, strong, readwrite) NSArray *metadataObjectTypes;
+
 @end
 
 @implementation CDZQRScanningViewController
 
-- (id)initWithMetadataObjectTypes:(NSArray *)metadataObjectTypes {
+- (instancetype)initWithMetadataObjectTypes:(NSArray *)metadataObjectTypes {
     self = [super init];
     if (!self) return nil;
     self.metadataObjectTypes = metadataObjectTypes;
@@ -41,7 +45,7 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
     return self;
 }
 
-- (id)init {
+- (instancetype)init {
     return [self initWithMetadataObjectTypes:@[ AVMetadataObjectTypeQRCode ]];
 }
 
@@ -106,10 +110,9 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
         [self.avSession addOutput:output];
         for (NSString *type in self.metadataObjectTypes) {
             if (![output.availableMetadataObjectTypes containsObject:type]) {
-                NSLog(@"QRScanningViewController Error: %@ object type not available.", type);
                 if (self.errorBlock) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        self.errorBlock([NSError errorWithDomain:AVFoundationErrorDomain code:0 userInfo:@{NSLocalizedDescriptionKey:@"Unable to scan barcodes"}]);
+                        self.errorBlock([NSError errorWithDomain:CDZQRScanningErrorDomain code:CDZQRScanningViewControllerErrorUnavailableMetadataObjectType userInfo:@{NSLocalizedDescriptionKey:@"Unable to scan object of type %@", type}]);
                     });
                 }
                 return;

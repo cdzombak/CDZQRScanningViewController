@@ -21,6 +21,8 @@
 static const float CDZQRScanningTorchLevel = 0.25;
 static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
 
+NSString * const CDZQRScanningErrorDomain = @"com.cdzombak.qrscanningviewcontroller";
+
 @interface CDZQRScanningViewController () <AVCaptureMetadataOutputObjectsDelegate>
 
 @property (nonatomic, strong) AVCaptureSession *avSession;
@@ -29,14 +31,27 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
 
 @property (nonatomic, copy) NSString *lastCapturedString;
 
+@property (nonatomic, strong, readwrite) NSArray *metadataObjectTypes;
+
 @end
 
 @implementation CDZQRScanningViewController
 
+- (instancetype)initWithMetadataObjectTypes:(NSArray *)metadataObjectTypes {
+    self = [super init];
+    if (!self) return nil;
+    self.metadataObjectTypes = metadataObjectTypes;
+    self.title = NSLocalizedString(@"Scan QR Code", nil);
+    return self;
+}
+
+- (instancetype)init {
+    return [self initWithMetadataObjectTypes:@[ AVMetadataObjectTypeQRCode ]];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.title = NSLocalizedString(@"Scan QR Code", nil);
     self.view.backgroundColor = [UIColor blackColor];
 
     UILongPressGestureRecognizer *torchGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleTorchRecognizerTap:)];
@@ -82,6 +97,7 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
             [self.avSession addInput:input];
         } else {
             NSLog(@"QRScanningViewController: Error getting input device: %@", error);
+            [self.avSession commitConfiguration];
             if (self.errorBlock) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     self.errorBlock(error);
@@ -92,16 +108,18 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
 
         AVCaptureMetadataOutput *output = [[AVCaptureMetadataOutput alloc] init];
         [self.avSession addOutput:output];
-        if (![output.availableMetadataObjectTypes containsObject:AVMetadataObjectTypeQRCode]) {
-            NSLog(@"QRScanningViewController Error: QR object type not available.");
-            if (self.errorBlock) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    self.errorBlock(nil);
-                });
+        for (NSString *type in self.metadataObjectTypes) {
+            if (![output.availableMetadataObjectTypes containsObject:type]) {
+                if (self.errorBlock) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        self.errorBlock([NSError errorWithDomain:CDZQRScanningErrorDomain code:CDZQRScanningViewControllerErrorUnavailableMetadataObjectType userInfo:@{NSLocalizedDescriptionKey:@"Unable to scan object of type %@", type}]);
+                    });
+                }
+                return;
             }
-            return;
         }
-        output.metadataObjectTypes = @[ AVMetadataObjectTypeQRCode ];
+        
+        output.metadataObjectTypes = self.metadataObjectTypes;
         [output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
 
         [self.avSession commitConfiguration];
@@ -195,7 +213,7 @@ static const NSTimeInterval CDZQRScanningTorchActivationDelay = 0.25;
     NSString *result;
 
     for (AVMetadataObject *metadata in metadataObjects) {
-        if ([metadata.type isEqualToString:AVMetadataObjectTypeQRCode]) {
+        if ([self.metadataObjectTypes containsObject:metadata.type]) {
             result = [(AVMetadataMachineReadableCodeObject *)metadata stringValue];
             break;
         }

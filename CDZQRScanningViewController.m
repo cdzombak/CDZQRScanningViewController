@@ -112,7 +112,7 @@ NSString * const CDZQRScanningErrorDomain = @"com.cdzombak.qrscanningviewcontrol
             if (![output.availableMetadataObjectTypes containsObject:type]) {
                 if (self.errorBlock) {
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        self.errorBlock([NSError errorWithDomain:CDZQRScanningErrorDomain code:CDZQRScanningViewControllerErrorUnavailableMetadataObjectType userInfo:@{NSLocalizedDescriptionKey:@"Unable to scan object of type %@", type}]);
+                        self.errorBlock([NSError errorWithDomain:CDZQRScanningErrorDomain code:CDZQRScanningViewControllerErrorUnavailableMetadataObjectType userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"Unable to scan object of type %@", type]}]);
                     });
                 }
                 return;

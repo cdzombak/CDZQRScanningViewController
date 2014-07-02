@@ -93,6 +93,7 @@ NSString * const CDZQRScanningErrorDomain = @"com.cdzombak.qrscanningviewcontrol
         self.errorBlock = ^(NSError *error) {
             CDZStrongSelf sSelf = wSelf;
             if (sSelf.cancelBlock) {
+                [self.avSession stopRunning];
                 sSelf.cancelBlock();
             }
         };
@@ -118,6 +119,7 @@ NSString * const CDZQRScanningErrorDomain = @"com.cdzombak.qrscanningviewcontrol
             [self.avSession commitConfiguration];
             if (self.errorBlock) {
                 dispatch_async(dispatch_get_main_queue(), ^{
+                    [self.avSession stopRunning];
                     self.errorBlock(error);
                 });
             }
@@ -130,6 +132,7 @@ NSString * const CDZQRScanningErrorDomain = @"com.cdzombak.qrscanningviewcontrol
             if (![output.availableMetadataObjectTypes containsObject:type]) {
                 if (self.errorBlock) {
                     dispatch_async(dispatch_get_main_queue(), ^{
+                        [self.avSession stopRunning];
                         self.errorBlock([NSError errorWithDomain:CDZQRScanningErrorDomain code:CDZQRScanningViewControllerErrorUnavailableMetadataObjectType userInfo:@{NSLocalizedDescriptionKey:[NSString stringWithFormat:@"Unable to scan object of type %@", type]}]);
                     });
                 }
@@ -165,7 +168,6 @@ NSString * const CDZQRScanningErrorDomain = @"com.cdzombak.qrscanningviewcontrol
 
     [self.previewLayer removeFromSuperlayer];
     self.previewLayer = nil;
-    [self.avSession stopRunning];
     self.avSession = nil;
     self.captureDevice = nil;
 }
@@ -189,6 +191,7 @@ NSString * const CDZQRScanningErrorDomain = @"com.cdzombak.qrscanningviewcontrol
 #pragma mark - UI Actions
 
 - (void)cancelItemSelected:(id)sender {
+    [self.avSession stopRunning];
     if (self.cancelBlock) self.cancelBlock();
 }
 
@@ -239,6 +242,7 @@ NSString * const CDZQRScanningErrorDomain = @"com.cdzombak.qrscanningviewcontrol
 
     if (result && ![self.lastCapturedString isEqualToString:result]) {
         self.lastCapturedString = result;
+        [self.avSession stopRunning];
         if (self.resultBlock) self.resultBlock(result);
     }
 }

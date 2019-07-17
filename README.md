@@ -1,3 +1,5 @@
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
 # CDZQRScanningViewController
 
 Easy QR code scanning on iOS 7.
